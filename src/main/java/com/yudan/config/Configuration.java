@@ -7,25 +7,26 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.nio.ByteBuffer;
 
-public class Config {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Config.class);
-    private static volatile Config CONFIG;
+public class Configuration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
+    private static volatile Configuration Configuration;
     private final String hostName = "openbarrage.douyutv.com";
     private final int port = 8601;
     private final int maxBufferLen = 4096;
-    private final int messageClient = 689;
+    private final short messageClient = 689;
 
 
-    public static Config newInstance() {
-        if (null == CONFIG) {
-            synchronized (Config.class) {
-                if (null == CONFIG) {
-                    CONFIG = new Config();
+    public static Configuration newInstance() {
+        if (null == Configuration) {
+            synchronized (Configuration.class) {
+                if (null == Configuration) {
+                    Configuration = new Configuration();
                 }
             }
         }
-        return CONFIG;
+        return Configuration;
     }
 
     public byte[] int2LittleByte(int i) {
@@ -62,9 +63,7 @@ public class Config {
 
     public byte[] joinRoomData(int roomId) {
         Encoder enc = new Encoder();
-        //first , login server of Douyu. this's the head
         enc.addItem("type", "loginreq");
-        //And add room id for Request
         enc.addItem("roomid", roomId);
         return getByte(enc.getResult());
     }
@@ -82,20 +81,18 @@ public class Config {
     }
 
     public byte[] getByte(String data) {
-        ByteArrayOutputStream boutput = new ByteArrayOutputStream();
-        DataOutputStream doutput = new DataOutputStream(boutput);
-        try {
-            boutput.reset();
-            doutput.write(int2LittleByte(data.length() + 8), 0, 4);
-            doutput.write(int2LittleByte(data.length() + 8), 0, 4);
-            doutput.write(short2BigByte((short) this.messageClient), 0, 2);
-            doutput.writeByte(0);
-            doutput.writeByte(0);
-            doutput.writeBytes(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return boutput.toByteArray();
+        byte[] b = data.getBytes();
+        byte i = 0;
+        int dataLen = b.length+12;
+        ByteBuffer buff = ByteBuffer.allocate(dataLen);
+        buff.put(int2LittleByte(dataLen));
+        buff.put(int2LittleByte(dataLen));
+        buff.put(short2BigByte(this.messageClient));
+        buff.put(i);
+        buff.put(i);
+        buff.put(b);
+        buff.flip();
+        return buff.array();
     }
 
     public byte[] getJoinGroupRequest(int roomId, int groupId){

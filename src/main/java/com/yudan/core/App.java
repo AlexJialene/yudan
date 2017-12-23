@@ -1,6 +1,6 @@
 package com.yudan.core;
 
-import com.yudan.config.Config;
+import com.yudan.config.Configuration;
 import com.yudan.thread.KeepAlive;
 import com.yudan.thread.Receive;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ import java.net.Socket;
 
 public class App {
     private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
-    private Config config = Config.newInstance();
+    private Configuration configuration = Configuration.newInstance();
     private Receive receive;
     private KeepAlive keepAlive;
     private Socket socket;
@@ -41,13 +41,15 @@ public class App {
     }
 
     protected void joinRoom() {
+        byte[] reqData = this.configuration.joinRoomData(this.roomId);
+
 
     }
 
     protected void connectServer() {
         LOGGER.info("connect to barrage Server of Douyu ...");
         try {
-            this.socket = new Socket(config.getHostName() , config.getPort());
+            this.socket = new Socket(configuration.getHostName() , configuration.getPort());
             this.bufferedInputStream = new BufferedInputStream(this.socket.getInputStream());
             this.bufferedOutputStream = new BufferedOutputStream(this.socket.getOutputStream());
         } catch (IOException e) {
