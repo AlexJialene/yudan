@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class Configuration {
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
@@ -81,13 +82,15 @@ public class Configuration {
     }
 
     public byte[] getByte(String data) {
+        int strLen = data.length()+8;
         byte[] b = data.getBytes();
         byte i = 0;
         int dataLen = b.length+12;
         ByteBuffer buff = ByteBuffer.allocate(dataLen);
-        buff.put(int2LittleByte(dataLen));
-        buff.put(int2LittleByte(dataLen));
-        buff.put(short2BigByte(this.messageClient));
+        buff.order(ByteOrder.LITTLE_ENDIAN);
+        buff.put(int2LittleByte(strLen));
+        buff.put(int2LittleByte(strLen));
+        buff.put(short2littleByte(messageClient));
         buff.put(i);
         buff.put(i);
         buff.put(b);
