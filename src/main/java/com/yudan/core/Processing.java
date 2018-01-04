@@ -10,6 +10,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 public class Processing implements Event {
     private Socket socket;
@@ -33,32 +34,20 @@ public class Processing implements Event {
     @Override
     public void receive() {
         byte[] recvByte = new byte[maxBufferLen];
-        //定义服务器返回信息的字符串
         String dataStr;
         try {
-            //读取服务器返回信息，并获取返回信息的整体字节长度
             int recvLen = bufferedInputStream.read(recvByte, 0, recvByte.length);
-
-            //根据实际获取的字节数初始化返回信息内容长度
-            byte[] realBuf = new byte[recvLen];
-            //按照实际获取的字节长度读取返回信息
-            //System.arraycopy(recvByte, 0, realBuf, 0, recvLen);
-            //根据TCP协议获取返回信息中的字符串信息
-            dataStr = new String(recvByte, 12, recvLen-12);
-            //循环处理socekt黏包情况
-            while(dataStr.lastIndexOf("type@=") > 5){
-                //对黏包中最后一个数据包进行解析
+            ByteBuffer byteBuffer = ByteBuffer.allocate(recvLen-12);
+            byteBuffer.put(recvByte , 12 , recvLen-12);
+            byteBuffer.flip();
+            dataStr = new String(byteBuffer.array());
+            while (dataStr.lastIndexOf("type@=") > 5) {
                 ReceiveMsg msgView = new ReceiveMsg(StringUtils.substring(dataStr, dataStr.lastIndexOf("type@=")));
-                //分析该包的数据类型，以及根据需要进行业务操作
                 callback(msgView);
-                //处理黏包中的剩余部分
                 dataStr = StringUtils.substring(dataStr, 0, dataStr.lastIndexOf("type@=") - 12);
             }
-            //对单一数据包进行解析
             ReceiveMsg msgView = new ReceiveMsg(dataStr);
-            //分析该包的数据类型，以及根据需要进行业务操作
             callback(msgView);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
