@@ -1,7 +1,7 @@
 # yudan
 斗鱼弹幕抓取
 
-![golang version](https://github.com/AlexJialene/go-yudan)
+[golang version](https://github.com/AlexJialene/go-yudan)
 
 ### 消息格式
 每条你所请求的消息格式为：<br>
